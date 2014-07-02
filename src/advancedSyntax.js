@@ -14,7 +14,7 @@ var attributeBindingOriginal
 
 advancedSyntax.attributeBinding = function(name, value, node) {
   if(name == 'value'){
-//    return name + ':' + value + ", valueUpdate: 'keyup'";
+    return 'value:' + value + ", valueUpdate: 'keyup'";
   }
   return attributeBindingOriginal(name, value, node);
 };
