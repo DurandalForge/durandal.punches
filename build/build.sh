@@ -23,6 +23,7 @@ cat fragments/pre.js \
     ../src/preprocessBindingProperty.js \
     ../src/expressionCallback.js \
     ../src/interpolationMarkup.js \
+    ../src/advancedSyntax.js \
     fragments/post.js > $OutDebugFile
 
 # Produce minified version using Google Closure compiler
