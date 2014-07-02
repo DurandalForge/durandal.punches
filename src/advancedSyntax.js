@@ -9,45 +9,6 @@ function trim(string) {
             string.toString().replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
 }
 
-advancedSyntax.templateSyntax = function(nodes, expressionText){
-
-  var controls = [
-      ['each', 'foreach'],
-      ['with', 'with'],
-      ['if', 'if'],
-  ];
-
-  if(expressionText == 'else' && lastIf){
-      nodes.push.apply(nodes, [document.createComment('/ko')]);
-      nodes.push.apply(nodes, [document.createComment('ko ifnot: ' + lastIf)]);
-      lastIf = null;
-      return true;
-  }
-
-  for (var i = 0; i < controls.length; i++) {
-      var control = controls[i];
-      var templateSyntax = controls[i][0];
-      var koSyntax = controls[i][1];
-      // {{#if true}} {{#each arr}} {{/each}} {{/if}}
-      if (expressionText.indexOf('#' + templateSyntax) === 0) {
-          expressionText = expressionText.replace('#' + templateSyntax, '');
-          if(templateSyntax == 'if'){
-              lastIf = expressionText;
-          }
-          nodes.push.apply(nodes, [document.createComment('ko ' + koSyntax + ': ' + expressionText)]);
-          return true;
-      }
-      if (expressionText.indexOf('/' + templateSyntax) === 0) {
-          nodes.push.apply(nodes, [document.createComment('/ko')]);
-          if(templateSyntax == 'if'){
-              lastIf = null;
-          }
-          return true;
-      }
-  }
-
-}
-
 var attributeBindingOriginal
   = ko.punches.attributeInterpolationMarkup.attributeBinding;
 
@@ -71,7 +32,7 @@ advancedSyntax.wrapExpression = function(expressionText, node) {
   var controls = [
       ['each', 'foreach'],
       ['with', 'with'],
-      ['if', 'if'],
+      ['if', 'if']
   ];
 
 
