@@ -8,8 +8,8 @@ handle_fail() {
 # Ensure we're in the build directory
 cd `dirname $0`
 
-OutDebugFile='output/knockout.punches.js'
-OutMinFile='output/knockout.punches.min.js'
+OutDebugFile='output/durandal-punches.js'
+OutMinFile='output/durandal-punches.min.js'
 
 # Delete output files (ensures we can write to them)
 rm -f $OutDebugFile $OutMinFile

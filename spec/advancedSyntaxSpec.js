@@ -109,8 +109,15 @@ describe('Advanced Syntax', function(){
     it('Should replace view-port to durandal router binding', function() {
       testNode.innerHTML = '<view-port></view-port><router-view-port></router-view-port>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="router: {cacheviews: true, transition: \'entrance\'}"></div>';
+      var outputHtml = '<div data-bind="router: {}"></div>';
       expect(testNode).toContainHtml(outputHtml + outputHtml);
+    });
+    
+    it('Should replace view-port transition and cacheViews attributes', function() {
+      testNode.innerHTML = '<view-port transition="entrance" cacheViews="true"></view-port>';
+      ko.applyBindings(null, testNode);
+      var outputHtml = '<div data-bind="router: {&quot;transition&quot;:&quot;entrance&quot;,&quot;cacheviews&quot;:true}"></div>'';
+      expect(testNode).toContainHtml(outputHtml);
     });
 
   });

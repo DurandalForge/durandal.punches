@@ -668,9 +668,15 @@ var interpolationPreprocessorOriginal = ko.punches.interpolationMarkup.preproces
 
 advancedSyntax.interpolationPreprocessor = function(node){
     if(node.localName == 'view-port' || node.localName == 'router-view-port'){
+      var routerBinding = {};
+      if(node.getAttribute('transition')){
+        routerBinding.transition = node.getAttribute('transition');
+      }
+      if(node.getAttribute('cacheViews')){
+        routerBinding.cacheViews = node.getAttribute('cacheViews') === 'true';
+      }
       var element = document.createElement('div');
-      element.setAttribute('data-bind',
-                           "router: {cacheViews: true, transition: 'entrance'}");
+      element.setAttribute('data-bind', 'router: ' + JSON.stringify(routerBinding) + '');
       if (node.parentNode) {
         node.parentNode.insertBefore(element, node);
         node.parentNode.removeChild(node);
