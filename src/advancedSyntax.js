@@ -14,7 +14,22 @@ var attributeBindingOriginal
 
 advancedSyntax.attributeBinding = function(name, value, node) {
   if(name == 'value'){
-    return 'value:' + value + ", valueUpdate: 'keyup'";
+    return "value:" + value + ",valueUpdate:'keyup'";
+  }
+  else if(name == 'ng-if'){
+    return "if:" + value;
+  }
+  else if(name == 'ng-repeat'){
+    var ownerDocument = node ? node.ownerDocument : document,
+    closeComment = ownerDocument.createComment("/ko"),
+    openComment =
+        ownerDocument.createComment("ko foreach:{data:" + value + ",as:'row'}");    
+    node.parentNode.insertBefore(openComment, node);
+    node.parentNode.insertBefore(closeComment, node.nextSibling);
+    return "with:$parent";
+  }
+  else if(name == 'ng-active'){
+    return "css:{'active':" + value + "}";
   }
   return attributeBindingOriginal(name, value, node);
 };
@@ -79,7 +94,11 @@ advancedSyntax.attributePreprocessor = function(node) {
 
       var eventCb = attr.name.match(/^on-(.+)/);
       var bindAtt = attr.name.match(/^bind-(.+)/);
-      if(eventCb){
+      if(attr.name == 'ng-if' || attr.name == 'ng-repeat' || attr.name == 'ng-active'){
+        node.removeAttributeNode(attr);
+        continue;
+      }
+      else if(eventCb){
           eventsAttrs.push(eventCb[1] + ': function(){ ' + attr.value + ' }');
           node.removeAttributeNode(attr);
       }

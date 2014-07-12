@@ -306,7 +306,8 @@ describe("Attribute Interpolation Markup preprocessor", function() {
         input.setAttribute('value', "{{expr1}}");
         input.setAttribute('checked', "{{expr2}}");
         ko.punches.attributeInterpolationMarkup.preprocessor(input);
-        expect(input.getAttribute('data-bind')).toEqual('checked:expr2,value:expr1');
+//        expect(input.getAttribute('data-bind')).toEqual('checked:expr2,value:expr1');
+        expect(input.getAttribute('data-bind')).toEqual("checked:expr2,value:expr1,valueUpdate:'keyup'");
     });
 
     it('Should support custom attribute binding using "attributeBinding" extension point', function() {

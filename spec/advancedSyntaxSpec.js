@@ -116,8 +116,54 @@ describe('Advanced Syntax', function(){
     it('Should replace view-port transition and cacheViews attributes', function() {
       testNode.innerHTML = '<view-port transition="entrance" cacheViews="true"></view-port>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="router: {&quot;transition&quot;:&quot;entrance&quot;,&quot;cacheviews&quot;:true}"></div>'';
+      var outputHtml = '<div data-bind="router: {&quot;transition&quot;:&quot;entrance&quot;,&quot;cacheviews&quot;:true}"></div>';
       expect(testNode).toContainHtml(outputHtml);
+    });
+
+  });
+  
+
+  describe("Angular Markup", function() {
+
+    beforeEach(jasmine.prepareTestNode);
+
+    var savePreprocessNode = ko.bindingProvider.instance.preprocessNode;
+    beforeEach(ko.punches.attributeInterpolationMarkup.enable);
+    afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
+
+    it('Should convert ng-if to ko-if', function() {
+      testNode.innerHTML = '<div bind-ng-if="isCool" ng-if>Cool</div>';
+      var model = {isCool: ko.observable(true)};
+      ko.applyBindings(model, testNode);
+      expect(testNode.innerHTML).toEqual('<div data-bind="if:isCool">Cool</div>');
+      expect(testNode.innerText).toEqual("Cool");
+      model.isCool(false);
+      expect(testNode.innerText).toEqual("");
+    });
+
+    it('Should convert ng-active to css:{active:', function() {
+      testNode.innerHTML = '<div class="demo" bind-ng-active="isActive" ng-active></div>';
+      var model = {isActive: ko.observable(true)};
+      ko.applyBindings(model, testNode);
+      expect(testNode.childNodes[0].className).toMatch(/demo/);
+      expect(testNode.childNodes[0].className).toMatch(/active/);
+      model.isActive(false);
+      expect(testNode.childNodes[0].className).toBe('demo');
+    });
+
+    it('Should convert ng-repeat to ko:foreach', function() {
+      var model = {people: ko.observableArray()};
+      testNode.innerHTML = '<div bind-ng-repeat="people" ng-repeat>{{row.name}}</div>';
+//      ko.punches.attributeInterpolationMarkup.preprocessor(testNode);
+      ko.applyBindings(model, testNode);
+      expect(testNode.innerHTML).toEqual("<!--ko foreach:{data:people,as:'row'}--><!--/ko-->");
+      model.people([
+        {name: 'Alex', age: 30},
+        {name: 'Jane', age: 14}
+      ]);
+      expect(testNode.childNodes[0].textContent).toEqual("ko foreach:{data:people,as:'row'}");
+//      console.log(Object.keys(testNode.childNodes[1]));
+      expect(testNode.childNodes[1].outerHTML).toEqual('<div data-bind="with:$parent">{{row.name}}</div>');
     });
 
   });
