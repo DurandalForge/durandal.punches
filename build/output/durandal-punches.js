@@ -563,17 +563,17 @@ advancedSyntax.attributeBinding = function(name, value, node) {
   if(name == 'value'){
     return "value:" + value + ",valueUpdate:'keyup'";
   }
-  else if(name == 'ng-if'){
-    return "if:" + value;
-  }
-  else if(name == 'ng-repeat'){
+  else if(name == 'ng-if' || name == 'ng-repeat'){
+    var isNgIf = name == 'ng-if';
     var ownerDocument = node ? node.ownerDocument : document,
     closeComment = ownerDocument.createComment("/ko"),
-    openComment =
-        ownerDocument.createComment("ko foreach:{data:" + value + ",as:'row'}");    
+    openComment = ownerDocument.createComment(
+      isNgIf ? "ko if:" + value :
+      "ko foreach:{data:" + value + ",as:'row'}"
+    );
     node.parentNode.insertBefore(openComment, node);
     node.parentNode.insertBefore(closeComment, node.nextSibling);
-    return "with:$parent";
+    return isNgIf ? "with:$data" : "with:$parent";
   }
   else if(name == 'ng-active'){
     return "css:{'active':" + value + "}";

@@ -132,13 +132,13 @@ describe('Advanced Syntax', function(){
     afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
 
     it('Should convert ng-if to ko-if', function() {
-      testNode.innerHTML = '<div bind-ng-if="isCool" ng-if>Cool</div>';
+      testNode.innerHTML = '<span bind-ng-if="isCool" ng-if>Cool</span>';
       var model = {isCool: ko.observable(true)};
       ko.applyBindings(model, testNode);
-      expect(testNode.innerHTML).toEqual('<div data-bind="if:isCool">Cool</div>');
+      expect(testNode.innerHTML).toEqual('<!--ko if:isCool--><span data-bind="with:$data">Cool</span><!--/ko-->');
       expect(testNode.innerText).toEqual("Cool");
       model.isCool(false);
-      expect(testNode.innerText).toEqual("");
+      expect(testNode.innerHTML).toEqual('<!--ko if:isCool--><!--/ko-->');
     });
 
     it('Should convert ng-active to css:{active:', function() {
