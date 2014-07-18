@@ -163,7 +163,9 @@ describe('Advanced Syntax', function(){
       ]);
       expect(testNode.childNodes[0].textContent).toEqual("ko foreach:{data:people,as:'row'}");
 //      console.log(Object.keys(testNode.childNodes[1]));
-      expect(testNode.childNodes[1].outerHTML).toEqual('<div data-bind="with:$parent">{{row.name}}</div>');
+      expect(testNode.childNodes[1].textContent).toEqual('ko with:$parent');
+      console.log(testNode.childNodes);
+      expect(testNode.childNodes[2].outerHTML).toEqual('<div data-bind="with:$data">{{row.name}}</div>');
     });
 
   });

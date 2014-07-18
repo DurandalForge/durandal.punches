@@ -573,7 +573,12 @@ advancedSyntax.attributeBinding = function(name, value, node) {
     );
     node.parentNode.insertBefore(openComment, node);
     node.parentNode.insertBefore(closeComment, node.nextSibling);
-    return isNgIf ? "with:$data" : "with:$parent";
+    if(//false &&
+       !isNgIf){
+        node.parentNode.insertBefore(ownerDocument.createComment('ko with:$parent'), node);
+        node.parentNode.insertBefore(ownerDocument.createComment('/ko'), node.nextSibling); // insertAfter
+    }
+    return isNgIf ? "with:$data" : "with:$data";
   }
   else if(name == 'ng-active'){
     return "css:{'active':" + value + "}";
