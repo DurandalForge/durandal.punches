@@ -16,6 +16,9 @@ advancedSyntax.attributeBinding = function(name, value, node) {
   if(name == 'value'){
     return "value:" + value + ",valueUpdate:'keyup'";
   }
+  else if(name == 'style'){
+    return "attr.style: " + value;
+  }
   else if(name == 'ng-if' || name == 'ng-repeat'){
     var isNgIf = name == 'ng-if';
     var ownerDocument = node ? node.ownerDocument : document,
