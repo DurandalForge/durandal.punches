@@ -12,7 +12,7 @@ function trim(string) {
 var attributeBindingOriginal
   = ko.punches.attributeInterpolationMarkup.attributeBinding;
 
-advancedSyntax.attributeBinding = function(name, value, node) {
+advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
   if(name == 'value'){
     return "value:" + value + ",valueUpdate:'keyup'";
   }
@@ -38,6 +38,12 @@ advancedSyntax.attributeBinding = function(name, value, node) {
   }
   else if(name == 'ng-active'){
     return "css:{'active':" + value + "}";
+  }
+  if(bindAtt){
+    var attrName = name.replace(/-([a-z])/g, function(m) {
+      return m[1].toUpperCase();
+    });
+    return attrName + ':' + value;
   }
   return attributeBindingOriginal(name, value, node);
 };
@@ -116,10 +122,10 @@ advancedSyntax.attributePreprocessor = function(node) {
           var attrName = bindAtt[1];
 
             if (attrValue) {
-                var attrBinding
-                = ko.punches.attributeInterpolationMarkup
-                    .attributeBinding(attrName, attrValue, node)
-                    || advancedSyntax.attributeBinding(attrName, attrValue, node);
+                var attrBinding =
+                // ko.punches.attributeInterpolationMarkup
+                //    .attributeBinding(attrName, attrValue, node)  || 
+                advancedSyntax.attributeBinding(attrName, attrValue, node, true);
                 if (!dataBindAttribute) {
                     dataBindAttribute = attrBinding
                 } else {
