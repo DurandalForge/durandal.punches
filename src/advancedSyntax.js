@@ -43,7 +43,13 @@ advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
     var attrName = name.replace(/-([a-z])/g, function(m) {
       return m[1].toUpperCase();
     });
-    return attrName + ':' + value;
+    name = attrName;
+//    if (ko.getBindingHandler(name)) {
+//        return name + ':' + value;
+//    } else {
+//        return 'attr.' + name + ':' + value;
+//    }
+//    return attrName + ':' + value;
   }
   return attributeBindingOriginal(name, value, node);
 };
