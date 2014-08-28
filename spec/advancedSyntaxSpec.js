@@ -98,6 +98,13 @@ describe('Advanced Syntax', function(){
     });
 
   });
+  
+  ko.bindingHandlers.viewPort = ko.bindingHandlers.routerViewPort = {
+  //  update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+  //    var value = valueAccessor();
+  //    var valueUnwrapped = ko.utils.unwrapObservable(value);
+  //  }
+  };
 
   describe("Custom element", function() {
     beforeEach(jasmine.prepareTestNode);
@@ -106,17 +113,17 @@ describe('Advanced Syntax', function(){
     beforeEach(ko.punches.interpolationMarkup.enable);
     afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
 
-    it('Should replace view-port to durandal router binding', function() {
-      testNode.innerHTML = '<view-port></view-port><router-view-port></router-view-port>';
+    it('Should replace router-view-port to durandal router binding', function() {
+      testNode.innerHTML = '<router-view-port></router-view-port>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="router: {}"></div>';
-      expect(testNode).toContainHtml(outputHtml + outputHtml);
+      var outputHtml = '<div data-bind="routerviewport: {}"></div>';
+      expect(testNode).toContainHtml(outputHtml);
     });
     
-    it('Should replace view-port transition and cacheViews attributes', function() {
-      testNode.innerHTML = '<view-port transition="entrance" cacheViews="true"></view-port>';
+    it('Should replace router-view-port transition and cacheViews attributes', function() {
+      testNode.innerHTML = '<router-view-port transition="\'entrance\'" cacheViews="true"></router-view-port>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="router: {&quot;transition&quot;:&quot;entrance&quot;,&quot;cacheviews&quot;:true}"></div>';
+      var outputHtml = '<div data-bind="routerviewport: {transition:\'entrance\',cacheviews:true}"></div>';
       expect(testNode).toContainHtml(outputHtml);
     });
 

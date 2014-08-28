@@ -598,6 +598,9 @@ advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
 //    }
 //    return attrName + ':' + value;
   }
+  if(['optionsText', 'optionsValue', 'optionsCaption'].indexOf(name) !== -1){
+    return name + ':' + value;
+  }
   return attributeBindingOriginal(name, value, node);
 };
 
@@ -706,23 +709,34 @@ advancedSyntax.attributePreprocessor = function(node) {
 var interpolationPreprocessorOriginal = ko.punches.interpolationMarkup.preprocessor;
 
 advancedSyntax.interpolationPreprocessor = function(node){
-    if(node.localName == 'view-port' || node.localName == 'router-view-port'){
-      var routerBinding = {};
-      if(node.getAttribute('transition')){
-        routerBinding.transition = node.getAttribute('transition');
+  var widgetName;
+    if(node.localName){
+      var localName = node.localName.toLowerCase();
+      widgetName = localName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+    }
+    if(widgetName && ko.getBindingHandler(widgetName)){
+      var widgetSettings = '{', keyString;
+      for(var i = 0; i < node.attributes.length; i++){
+        var bindAtt = node.attributes[i].name.match(/^bind-(.+)/);
+        if(bindAtt){
+          keyString = bindAtt[1];
+          keyString = keyString.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+          widgetSettings += (i == 0 ? '' : ',') +
+            keyString + ':' + node.attributes[i].nodeValue;
+        }
       }
-      if(node.getAttribute('cacheViews')){
-        routerBinding.cacheViews = node.getAttribute('cacheViews') === 'true';
-      }
+      widgetSettings += '}';
       var element = document.createElement('div');
-      element.setAttribute('data-bind', 'router: ' + JSON.stringify(routerBinding) + '');
+//      alert(widgetName + ': ' + widgetSettings);
+      element.setAttribute('data-bind', widgetName + ': ' + widgetSettings);
+//      alert(element.getAttribute('data-bind'));
       if (node.parentNode) {
         node.parentNode.insertBefore(element, node);
         node.parentNode.removeChild(node);
       }
       return [element];
-  }
-  return interpolationPreprocessorOriginal(node);
+    }
+    return interpolationPreprocessorOriginal(node);
 }
 
 ko.punches.interpolationMarkup.wrapExpression
