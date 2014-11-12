@@ -8,8 +8,8 @@ handle_fail() {
 # Ensure we're in the build directory
 cd `dirname $0`
 
-OutDebugFile='output/kingdom-punches.js'
-OutMinFile='output/kingdom-punches.min.js'
+OutDebugFile='output/durangular.punches.js'
+OutMinFile='output/durangular.punches.min.js'
 
 # Delete output files (ensures we can write to them)
 rm -f $OutDebugFile $OutMinFile
@@ -23,7 +23,7 @@ cat fragments/pre.js \
     ../src/preprocessBindingProperty.js \
     ../src/expressionCallback.js \
     ../src/interpolationMarkup.js \
-    ../src/advancedSyntax.js \
+    ../src/durangularSyntax.js \
     fragments/post.js > $OutDebugFile
 
 # Produce minified version using Google Closure compiler
