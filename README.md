@@ -1,26 +1,42 @@
-## Knockout.Punches
+Enabling you to explore Angular 2.0 with knockout js in a Backward Compatible way.
 
-Using the new APIs in [Knockout 3.0.0](https://github.com/knockout/knockout/releases/tag/v3.0.0beta), this plugin provides a set of enhanced binding syntaxes.
+```javascript
+ko.bindingHandlers.someCoolElement = { /* ... */ };
+ko.punches.enableAll();
+```
 
-1. Embedded text and attribute bindings
-2. Text filters
-3. Namespaced dynamic bindings
-4. Wrapped event callbacks
-5. Expression-based event handling
+```html
+<div [ng-if]="people.length" class="people-links">
+  <a [ng-repeat|person]="people"
+     href="{{person.url}}"
+     (click)="select(person)">
+     {{person.fullName}}
+  </a>
+  <some-cool-element
+    [param]="someValue"
+    [another-param]="anotherValue">
+  </some-cool-element>
+</div>
+```
 
-### Download
+is equivalent to:
 
-* Minified: [knockout.punches.min.js](http://mbest.github.io/knockout.punches/knockout.punches.min.js)
-* Source: [knockout.punches.js](http://mbest.github.io/knockout.punches/knockout.punches.js)
+```html
+<!-- ko if: people.length -->
+<div class="people-links">
+  <!-- ko foreach: {data: people, as: 'person'} -->
+    <a data-bind="
+        attr: {href: person.url},
+        event: {click: function(){ select(person) }}">
+      <!-- ko text: person.fullName --><!-- /ko -->
+    </a>
+  <!-- /ko -->
+  <div data-bind="someCoolElement: {
+    param: someValue,
+    anotherParam: anotherValue
+  }"></div>
+</div>
+<!-- /ko -->
+```
 
-### Documentation
-
-* [http://mbest.github.io/knockout.punches/](http://mbest.github.io/knockout.punches/)
-
-### License and Contact
-
-**License:** MIT (http://www.opensource.org/licenses/mit-license.php)
-
-Michael Best<br>
-https://github.com/mbest<br>
-mbest@dasya.com
+Originally started as a fork of https://github.com/mbest/knockout.punches
