@@ -560,19 +560,23 @@ var attributeBindingOriginal
   = ko.punches.attributeInterpolationMarkup.attributeBinding;
 
 advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
+  var matches = [];
   if(name == 'value'){
     return "value:" + value + ",valueUpdate:'keyup'";
   }
   else if(name == 'style'){
     return "attr.style: " + value;
   }
-  else if(name == 'ng-if' || name == 'ng-repeat'){
+  else if(name == 'ng-if' || name == 'ng-repeat'
+          || ((matches = name.match(/ng-repeat\|(.+)/)) && (name = 'ng-repeat'))
+         ){
     var isNgIf = name == 'ng-if';
+    var ngRepeatAs = trim(matches[1]) || 'row';
     var ownerDocument = node ? node.ownerDocument : document,
     closeComment = ownerDocument.createComment("/ko"),
     openComment = ownerDocument.createComment(
       isNgIf ? "ko if:" + value :
-      "ko foreach:{data:" + value + ",as:'row'}"
+      "ko foreach:{data:" + value + ",as:'" + ngRepeatAs + "'}"
     );
     node.parentNode.insertBefore(openComment, node);
     node.parentNode.insertBefore(closeComment, node.nextSibling);
@@ -664,6 +668,12 @@ advancedSyntax.attributePreprocessor = function(node) {
 
       var eventCb = attr.name.match(/^on-(.+)/);
       var bindAtt = attr.name.match(/^bind-(.+)/);
+      if(!bindAtt){
+        bindAtt = attr.name.match(/^\[(.+?)\]$/);
+      }
+      if(!eventCb){
+        eventCb = attr.name.match(/^\((.+?)\)$/);
+      }
       if(attr.name == 'ng-if' || attr.name == 'ng-repeat' || attr.name == 'ng-active'){
         node.removeAttributeNode(attr);
         continue;
@@ -674,7 +684,6 @@ advancedSyntax.attributePreprocessor = function(node) {
       }
       else if (bindAtt) {
           var attrValue = attr.value;
-//          var attrName = attr.name.replace('bind-', '');
           var attrName = bindAtt[1];
 
             if (attrValue) {
@@ -717,12 +726,16 @@ advancedSyntax.interpolationPreprocessor = function(node){
     if(widgetName && ko.getBindingHandler(widgetName)){
       var widgetSettings = '{', keyString;
       for(var i = 0; i < node.attributes.length; i++){
-        var bindAtt = node.attributes[i].name.match(/^bind-(.+)/);
+        var attr = node.attributes[i];
+        var bindAtt = attr.name.match(/^bind-(.+)/);
+        if(!bindAtt){
+          bindAtt = attr.name.match(/^\[(.+?)\]$/);
+        }
         if(bindAtt){
           keyString = bindAtt[1];
           keyString = keyString.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
           widgetSettings += (i == 0 ? '' : ',') +
-            keyString + ':' + node.attributes[i].nodeValue;
+            keyString + ':' + attr.nodeValue;
         }
       }
       widgetSettings += '}';

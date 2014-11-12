@@ -99,36 +99,100 @@ describe('Advanced Syntax', function(){
 
   });
   
-  ko.bindingHandlers.viewPort = ko.bindingHandlers.routerViewPort = {
-  //  update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-  //    var value = valueAccessor();
-  //    var valueUnwrapped = ko.utils.unwrapObservable(value);
-  //  }
-  };
-
   describe("Custom element", function() {
     beforeEach(jasmine.prepareTestNode);
 
     var savePreprocessNode = ko.bindingProvider.instance.preprocessNode;
     beforeEach(ko.punches.interpolationMarkup.enable);
     afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
+    
+    ko.bindingHandlers.helloWorld = {};
 
-    it('Should replace router-view-port to durandal router binding', function() {
-      testNode.innerHTML = '<router-view-port></router-view-port>';
+    it('Should replace custom elements to ko custom bindings', function() {
+      testNode.innerHTML = '<hello-world></hello-world>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="routerviewport: {}"></div>';
-      expect(testNode).toContainHtml(outputHtml);
+      var outputHtml = '<div data-bind="helloWorld: {}"></div>';
+      expect(testNode.innerHTML).toEqual(outputHtml);
+//      expect(testNode).toContainHtml(outputHtml);
     });
     
-    it('Should replace router-view-port transition and cacheViews attributes', function() {
-      testNode.innerHTML = '<router-view-port transition="\'entrance\'" cacheViews="true"></router-view-port>';
+    it('Should replace custom element attributes', function() {
+      testNode.innerHTML = '<hello-world bind-message="\'Hello World\'" [yell]="true"></hello-world>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="routerviewport: {transition:\'entrance\',cacheviews:true}"></div>';
-      expect(testNode).toContainHtml(outputHtml);
+      var outputHtml = '<div data-bind="helloWorld: {message:\'Hello World\',yell:true}"></div>';
+      expect(testNode.innerHTML).toEqual(outputHtml);
+//      expect(testNode).toContainHtml(outputHtml);
     });
 
   });
   
+  
+
+  describe("[property]=\"value\" markup", function() {
+
+    beforeEach(jasmine.prepareTestNode);
+
+    var savePreprocessNode = ko.bindingProvider.instance.preprocessNode;
+    beforeEach(ko.punches.attributeInterpolationMarkup.enable);
+    afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
+
+    it('Should work with constant expressions', function() {
+      testNode.innerHTML = '<div [title]="\'hello \' + \'world!\'"></div>';
+//        ko.applyBindings({name: 'Dummy'}, testNode);
+      ko.applyBindings(null, testNode);
+//      expect(testNode.innerHTML).toEqual('<div title="\'hello \' + \'world!\'"></div>');
+      expect(testNode.childNodes[0].title).toEqual("hello world!");
+    });
+
+    it('Should replace properties in view model', function() {
+      testNode.innerHTML = '<div [title]="\'hello \' + name"></div>';
+      ko.applyBindings({name: 'Dummy'}, testNode);
+      expect(testNode.childNodes[0].title).toEqual("hello Dummy");
+    });
+
+    it('Should be bidirectional for observables', function() {
+      var model = {name: ko.observable('Dummy')};
+      testNode.innerHTML = '<div [title]="name"></div>';
+      ko.applyBindings(model, testNode);
+      expect(testNode.childNodes[0].title).toEqual("Dummy");
+      model.name('Tummy');
+      expect(testNode.childNodes[0].title).toEqual("Tummy");
+    });
+
+  });
+
+  describe("(event) markup", function() {
+
+    beforeEach(jasmine.prepareTestNode);
+
+    var savePreprocessNode = ko.bindingProvider.instance.preprocessNode;
+    beforeEach(ko.punches.attributeInterpolationMarkup.enable);
+    afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
+
+    it('Should work with expressions', function() {
+      var model = {total: 0};
+      testNode.innerHTML = '<button (click)="total = 10; console.log(total);">hey</button>';
+        ko.applyBindings(model, testNode);
+        ko.utils.triggerEvent(testNode.childNodes[0], "click");
+        expect(model.total).toEqual(10);
+    });
+
+    it('Should call functions on the viewmodel, with context', function() {
+      var model = {
+        game: 'start',
+        finish: function(){
+          this.game = 'over';
+        }
+      };
+      testNode.innerHTML = '<button (click)="finish()">hey</button>';
+        ko.applyBindings(model, testNode);
+        ko.utils.triggerEvent(testNode.childNodes[0], "click");
+        expect(model.game).toEqual('over');
+    });
+
+  });
+
+
 
   describe("Angular Markup", function() {
 
@@ -173,6 +237,23 @@ describe('Advanced Syntax', function(){
       expect(testNode.childNodes[1].textContent).toEqual('ko with:$parent');
       console.log(testNode.childNodes);
       expect(testNode.childNodes[2].outerHTML).toEqual('<div data-bind="with:$data">{{row.name}}</div>');
+    });
+    
+    it('Should allow alias for ng-repeat row', function() {
+      var model = {people: ko.observableArray()};
+      testNode.innerHTML = '<div [ng-repeat|person]="people">{{person.name}}</div>';
+//      ko.punches.attributeInterpolationMarkup.preprocessor(testNode);
+      ko.applyBindings(model, testNode);
+      expect(testNode.innerHTML).toEqual("<!--ko foreach:{data:people,as:'person'}--><!--/ko-->");
+      model.people([
+        {name: 'Alex', age: 30},
+        {name: 'Jane', age: 14}
+      ]);
+      expect(testNode.childNodes[0].textContent).toEqual("ko foreach:{data:people,as:'person'}");
+//      console.log(Object.keys(testNode.childNodes[1]));
+      expect(testNode.childNodes[1].textContent).toEqual('ko with:$parent');
+      console.log(testNode.childNodes);
+      expect(testNode.childNodes[2].outerHTML).toEqual('<div data-bind="with:$data">{{person.name}}</div>');
     });
 
   });
