@@ -1,4 +1,4 @@
-var advancedSyntax = {};
+var durandalSyntax = {};
 
 var lastIf = null;
 
@@ -12,7 +12,7 @@ function trim(string) {
 var attributeBindingOriginal
   = ko.punches.attributeInterpolationMarkup.attributeBinding;
 
-advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
+durandalSyntax.attributeBinding = function(name, value, node, bindAtt) {
   var matches = [];
   if(name == 'value'){
     return "value:" + value + ",valueUpdate:'keyup'";
@@ -20,11 +20,13 @@ advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
   else if(name == 'style'){
     return "attr.style: " + value;
   }
-  else if(name == 'ng-if' || name == 'ng-repeat'
-          || ((matches = name.match(/ng-repeat\|(.+)/)) && (name = 'ng-repeat'))
-         ){
-    var isNgIf = name == 'ng-if';
-    var ngRepeatAs = trim(matches[1]) || 'row';
+  else if(name == 'if' || name == 'repeat'){
+    var isNgIf = name == 'if';
+    var matches, ngRepeatAs = 'row';
+    if(matches = value.match(/(\w+?)\s+?as\s+?(\w+)/)){
+      ngRepeatAs = matches[2];
+      value = matches[1];
+    }
     var ownerDocument = node ? node.ownerDocument : document,
     closeComment = ownerDocument.createComment("/ko"),
     openComment = ownerDocument.createComment(
@@ -40,9 +42,9 @@ advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
     }
     return isNgIf ? "with:$data" : "with:$data";
   }
-  else if(name == 'ng-active'){
-    return "css:{'active':" + value + "}";
-  }
+//  else if(name == 'active'){
+//    return "css:{'active':" + value + "}";
+//  } 
   if(bindAtt){
     var attrName = name.replace(/-([a-z])/g, function(m) {
       return m[1].toUpperCase();
@@ -63,7 +65,7 @@ advancedSyntax.attributeBinding = function(name, value, node, bindAtt) {
 
 var wrapExpressionOriginal = ko.punches.interpolationMarkup.wrapExpression;
 
-advancedSyntax.wrapExpression = function(expressionText, node) {
+durandalSyntax.wrapExpression = function(expressionText, node) {
     var ownerDocument = node ? node.ownerDocument : document,
         closeComment = ownerDocument.createComment("/ko"),
         firstChar = expressionText[0];
@@ -108,7 +110,7 @@ var attributePreprocessorOriginal
   = ko.punches.attributeInterpolationMarkup.preprocessor;
 
 var dataBind = 'data-bind';
-advancedSyntax.attributePreprocessor = function(node) {
+durandalSyntax.attributePreprocessor = function(node) {
   if (node.nodeType === 1 && node.attributes.length) {
     var dataBindAttribute = node.getAttribute(dataBind);
     var eventsAttrs = [];
@@ -127,7 +129,7 @@ advancedSyntax.attributePreprocessor = function(node) {
       if(!eventCb){
         eventCb = attr.name.match(/^\((.+?)\)$/);
       }
-      if(attr.name == 'ng-if' || attr.name == 'ng-repeat' || attr.name == 'ng-active'){
+      if(attr.name == 'if' || attr.name == 'repeat' || attr.name == 'active'){
         node.removeAttributeNode(attr);
         continue;
       }
@@ -143,7 +145,7 @@ advancedSyntax.attributePreprocessor = function(node) {
                 var attrBinding =
                 // ko.punches.attributeInterpolationMarkup
                 //    .attributeBinding(attrName, attrValue, node)  || 
-                advancedSyntax.attributeBinding(attrName, attrValue, node, true);
+                durandalSyntax.attributeBinding(attrName, attrValue, node, true);
                 if (!dataBindAttribute) {
                     dataBindAttribute = attrBinding
                 } else {
@@ -170,7 +172,7 @@ advancedSyntax.attributePreprocessor = function(node) {
 
 var interpolationPreprocessorOriginal = ko.punches.interpolationMarkup.preprocessor;
 
-advancedSyntax.interpolationPreprocessor = function(node){
+durandalSyntax.interpolationPreprocessor = function(node){
   var widgetName;
     if(node.localName){
       var localName = node.localName.toLowerCase();
@@ -206,12 +208,12 @@ advancedSyntax.interpolationPreprocessor = function(node){
 }
 
 ko.punches.interpolationMarkup.wrapExpression
-  = advancedSyntax.wrapExpression;
+  = durandalSyntax.wrapExpression;
 ko.punches.attributeInterpolationMarkup.attributeBinding
-  = advancedSyntax.attributeBinding;
+  = durandalSyntax.attributeBinding;
 
 ko.punches.attributeInterpolationMarkup.preprocessor
-  = advancedSyntax.attributePreprocessor;
+  = durandalSyntax.attributePreprocessor;
 
 ko.punches.interpolationMarkup.preprocessor
-  = advancedSyntax.interpolationPreprocessor;
+  = durandalSyntax.interpolationPreprocessor;

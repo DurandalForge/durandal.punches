@@ -1,4 +1,4 @@
-describe('Advanced Syntax', function(){
+describe('Durandal Syntax', function(){
   beforeEach(jasmine.prepareTestNode);
 
   describe('Template markup', function(){
@@ -194,7 +194,7 @@ describe('Advanced Syntax', function(){
 
 
 
-  describe("Angular Markup", function() {
+  describe("If and Repeat Markup", function() {
 
     beforeEach(jasmine.prepareTestNode);
 
@@ -202,8 +202,8 @@ describe('Advanced Syntax', function(){
     beforeEach(ko.punches.attributeInterpolationMarkup.enable);
     afterEach(function() { ko.bindingProvider.instance.preprocessNode = savePreprocessNode; });
 
-    it('Should convert ng-if to ko-if', function() {
-      testNode.innerHTML = '<span bind-ng-if="isCool" ng-if>Cool</span>';
+    it('Should convert if to ko if', function() {
+      testNode.innerHTML = '<span bind-if="isCool">Cool</span>';
       var model = {isCool: ko.observable(true)};
       ko.applyBindings(model, testNode);
       expect(testNode.innerHTML).toEqual('<!--ko if:isCool--><span data-bind="with:$data">Cool</span><!--/ko-->');
@@ -212,8 +212,8 @@ describe('Advanced Syntax', function(){
       expect(testNode.innerHTML).toEqual('<!--ko if:isCool--><!--/ko-->');
     });
 
-    it('Should convert ng-active to css:{active:', function() {
-      testNode.innerHTML = '<div class="demo" bind-ng-active="isActive" ng-active></div>';
+    xit('Should convert active to css:{active:', function() {
+      testNode.innerHTML = '<div class="demo" bind-active="isActive"></div>';
       var model = {isActive: ko.observable(true)};
       ko.applyBindings(model, testNode);
       expect(testNode.childNodes[0].className).toMatch(/demo/);
@@ -222,9 +222,9 @@ describe('Advanced Syntax', function(){
       expect(testNode.childNodes[0].className).toBe('demo');
     });
 
-    it('Should convert ng-repeat to ko:foreach', function() {
+    it('Should convert repeat to ko:foreach', function() {
       var model = {people: ko.observableArray()};
-      testNode.innerHTML = '<div bind-ng-repeat="people" ng-repeat>{{row.name}}</div>';
+      testNode.innerHTML = '<div bind-repeat="people">{{row.name}}</div>';
 //      ko.punches.attributeInterpolationMarkup.preprocessor(testNode);
       ko.applyBindings(model, testNode);
       expect(testNode.innerHTML).toEqual("<!--ko foreach:{data:people,as:'row'}--><!--/ko-->");
@@ -239,9 +239,9 @@ describe('Advanced Syntax', function(){
       expect(testNode.childNodes[2].outerHTML).toEqual('<div data-bind="with:$data">{{row.name}}</div>');
     });
     
-    it('Should allow alias for ng-repeat row', function() {
+    it('Should allow alias for repeat row', function() {
       var model = {people: ko.observableArray()};
-      testNode.innerHTML = '<div [ng-repeat|person]="people">{{person.name}}</div>';
+      testNode.innerHTML = '<div bind-repeat="people as person">{{person.name}}</div>';
 //      ko.punches.attributeInterpolationMarkup.preprocessor(testNode);
       ko.applyBindings(model, testNode);
       expect(testNode.innerHTML).toEqual("<!--ko foreach:{data:people,as:'person'}--><!--/ko-->");
