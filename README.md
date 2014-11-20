@@ -1,4 +1,4 @@
-Enabling you to explore Angular 2.0 with knockout js in a Backward Compatible way.
+Enabling you to explore Durandal NextGen with knockout js in a Backward Compatible way.
 
 ```javascript
 ko.bindingHandlers.someCoolElement = { /* ... */ };
@@ -6,15 +6,15 @@ ko.punches.enableAll();
 ```
 
 ```html
-<div [ng-if]="people.length" class="people-links">
-  <a [ng-repeat|person]="people"
+<div bind-if="people.length" class="people-links">
+  <a bind-repeat="people as person"
      href="{{person.url}}"
-     (click)="select(person)">
+     on-click="select(person)">
      {{person.fullName}}
   </a>
   <some-cool-element
-    [param]="someValue"
-    [another-param]="anotherValue">
+    bind-param="someValue"
+    bind-another-param="anotherValue">
   </some-cool-element>
 </div>
 ```
