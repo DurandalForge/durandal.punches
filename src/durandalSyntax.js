@@ -23,7 +23,7 @@ durandalSyntax.attributeBinding = function(name, value, node, bindAtt) {
   else if(name == 'if' || name == 'repeat'){
     var isNgIf = name == 'if';
     var matches, ngRepeatAs = 'row';
-    if(matches = value.match(/(\w+?)\s+?as\s+?(\w+)/)){
+    if(matches = value.match(/(.+?)\s+?as\s+?(\w+)/)){
       ngRepeatAs = matches[2];
       value = matches[1];
     }
