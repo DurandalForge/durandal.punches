@@ -134,7 +134,7 @@ durandalSyntax.attributePreprocessor = function(node) {
         continue;
       }
       else if(eventCb){
-          eventsAttrs.push(eventCb[1] + ': function(){ ' + attr.value + ' }');
+          eventsAttrs.push(eventCb[1] + ': function($data,$event){ ' + attr.value + ' }');
           node.removeAttributeNode(attr);
       }
       else if (bindAtt) {
