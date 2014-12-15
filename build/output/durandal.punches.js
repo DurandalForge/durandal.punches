@@ -745,6 +745,7 @@ durandalSyntax.interpolationPreprocessor = function(node){
 //      alert(widgetName + ': ' + widgetSettings);
       element.setAttribute('data-bind', widgetName + ': ' + widgetSettings);
 //      alert(element.getAttribute('data-bind'));
+      element.innerHTML = node.innerHTML;
       if (node.parentNode) {
         node.parentNode.insertBefore(element, node);
         node.parentNode.removeChild(node);
