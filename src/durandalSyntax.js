@@ -180,6 +180,7 @@ durandalSyntax.interpolationPreprocessor = function(node){
     }
     if(widgetName && ko.getBindingHandler(widgetName)){
       var widgetSettings = '{', keyString;
+      var widgetAttributes = {};
       for(var i = 0; i < node.attributes.length; i++){
         var attr = node.attributes[i];
         var bindAtt = attr.name.match(/^bind-(.+)/);
@@ -192,12 +193,16 @@ durandalSyntax.interpolationPreprocessor = function(node){
           widgetSettings += (i == 0 ? '' : ',') +
             keyString + ':' + attr.nodeValue;
         }
+        else {
+          widgetAttributes[attr.name] = attr.nodeValue;
+        }
       }
       widgetSettings += '}';
       var element = document.createElement('div');
-//      alert(widgetName + ': ' + widgetSettings);
       element.setAttribute('data-bind', widgetName + ': ' + widgetSettings);
-//      alert(element.getAttribute('data-bind'));
+      for(var k in widgetAttributes){
+        element.setAttribute(k, widgetAttributes[k]);
+      }
       element.innerHTML = node.innerHTML;
       if (node.parentNode) {
         node.parentNode.insertBefore(element, node);
