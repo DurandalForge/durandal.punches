@@ -392,6 +392,9 @@ ko.bindingHandlers.on = {
 function parseInterpolationMarkup(textToParse, outerTextCallback, expressionCallback) {
     function innerParse(text) {
         var innerMatch = text.match(/^([\s\S]*)}}([\s\S]*?)\{\{([\s\S]*)$/);
+        if(!innerMatch){
+            innerMatch = text.match(/^([\s\S]*)}([\s\S]*?)\$\{([\s\S]*)$/);
+        }
         if (innerMatch) {
             innerParse(innerMatch[1]);
             outerTextCallback(innerMatch[2]);
@@ -401,6 +404,9 @@ function parseInterpolationMarkup(textToParse, outerTextCallback, expressionCall
         }
     }
     var outerMatch = textToParse.match(/^([\s\S]*?)\{\{([\s\S]*)}}([\s\S]*)$/);
+    if(!outerMatch){
+        outerMatch = textToParse.match(/^([\s\S]*?)\$\{([\s\S]*)}([\s\S]*)$/);
+    }
     if (outerMatch) {
         outerTextCallback(outerMatch[1]);
         innerParse(outerMatch[2]);
@@ -417,7 +423,8 @@ function trim(string) {
 
 function interpolationMarkupPreprocessor(node) {
     // only needs to work with text nodes
-    if (node.nodeType === 3 && node.nodeValue && node.nodeValue.indexOf('{{') !== -1) {
+    if (node.nodeType === 3 && node.nodeValue 
+        && (node.nodeValue.indexOf('{{') !== -1 || node.nodeValue.indexOf('${') !== -1)) {
         var nodes = [];
         function addTextNode(text) {
             if (text)
@@ -495,7 +502,8 @@ function attributeInterpolationMarkerPreprocessor(node) {
         var dataBindAttribute = node.getAttribute(dataBind);
         for (var attrs = node.attributes, i = attrs.length-1; i >= 0; --i) {
             var attr = attrs[i];
-            if (attr.specified && attr.name != dataBind && attr.value.indexOf('{{') !== -1) {
+            if (attr.specified && attr.name != dataBind 
+                && (attr.value.indexOf('{{') !== -1 || attr.value.indexOf('${') !== -1)) {
                 var parts = [], attrValue = '';
                 function addText(text) {
                     if (text)
@@ -573,6 +581,10 @@ durandalSyntax.attributeBinding = function(name, value, node, bindAtt) {
     if(matches = value.match(/(.+?)\s+?as\s+?(\w+)/)){
       ngRepeatAs = matches[2];
       value = matches[1];
+    }
+    else if(matches = value.match(/(.+?)\s+?of\s+?(.+)/)){
+      ngRepeatAs = matches[1];
+      value = matches[2];
     }
     var ownerDocument = node ? node.ownerDocument : document,
     closeComment = ownerDocument.createComment("/ko"),
@@ -668,13 +680,25 @@ durandalSyntax.attributePreprocessor = function(node) {
         continue;
       }
 
-      var eventCb = attr.name.match(/^on-(.+)/);
-      var bindAtt = attr.name.match(/^bind-(.+)/);
+      var eventCb = attr.name.match(/^(.+)\.delegate$/);
+      var bindAtt = attr.name.match(/^(.+)\.bind$/);
+      if(!bindAtt){
+        bindAtt = attr.name.match(/^bind-(.+)/);
+      }
       if(!bindAtt){
         bindAtt = attr.name.match(/^\[(.+?)\]$/);
       }
       if(!eventCb){
+        eventCb = attr.name.match(/^(.+)\.trigger$/);
+      }
+      if(!eventCb){
+        eventCb = attr.name.match(/^on-(.+)/);
+      }
+      if(!eventCb){
         eventCb = attr.name.match(/^\((.+?)\)$/);
+      }
+      if(attr.name == 'repeat.for'){
+        bindAtt = ['repeat.for', 'repeat'];
       }
       if(attr.name == 'if' || attr.name == 'repeat' || attr.name == 'active'){
         node.removeAttributeNode(attr);
@@ -726,25 +750,27 @@ durandalSyntax.interpolationPreprocessor = function(node){
       widgetName = localName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
     }
     if(widgetName && ko.getBindingHandler(widgetName)){
-      var widgetSettings = '{', keyString;
+      var widgetSettings = [], keyString;
       var widgetAttributes = {};
       for(var i = 0; i < node.attributes.length; i++){
         var attr = node.attributes[i];
-        var bindAtt = attr.name.match(/^bind-(.+)/);
+        var bindAtt = attr.name.match(/^(.+)\.bind$/);
+        if(!bindAtt){
+          bindAtt = attr.name.match(/^bind-(.+)/);
+        }
         if(!bindAtt){
           bindAtt = attr.name.match(/^\[(.+?)\]$/);
         }
         if(bindAtt){
           keyString = bindAtt[1];
           keyString = keyString.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-          widgetSettings += (i == 0 ? '' : ',') +
-            keyString + ':' + attr.nodeValue;
+          widgetSettings.push(keyString + ':' + attr.nodeValue);
         }
         else {
           widgetAttributes[attr.name] = attr.nodeValue;
         }
       }
-      widgetSettings += '}';
+      widgetSettings = '{' + widgetSettings.join(',') + '}';
       var element = document.createElement('div');
       element.setAttribute('data-bind', widgetName + ': ' + widgetSettings);
       for(var k in widgetAttributes){

@@ -2,6 +2,9 @@
 function parseInterpolationMarkup(textToParse, outerTextCallback, expressionCallback) {
     function innerParse(text) {
         var innerMatch = text.match(/^([\s\S]*)}}([\s\S]*?)\{\{([\s\S]*)$/);
+        if(!innerMatch){
+            innerMatch = text.match(/^([\s\S]*)}([\s\S]*?)\$\{([\s\S]*)$/);
+        }
         if (innerMatch) {
             innerParse(innerMatch[1]);
             outerTextCallback(innerMatch[2]);
@@ -11,6 +14,9 @@ function parseInterpolationMarkup(textToParse, outerTextCallback, expressionCall
         }
     }
     var outerMatch = textToParse.match(/^([\s\S]*?)\{\{([\s\S]*)}}([\s\S]*)$/);
+    if(!outerMatch){
+        outerMatch = textToParse.match(/^([\s\S]*?)\$\{([\s\S]*)}([\s\S]*)$/);
+    }
     if (outerMatch) {
         outerTextCallback(outerMatch[1]);
         innerParse(outerMatch[2]);
@@ -27,7 +33,8 @@ function trim(string) {
 
 function interpolationMarkupPreprocessor(node) {
     // only needs to work with text nodes
-    if (node.nodeType === 3 && node.nodeValue && node.nodeValue.indexOf('{{') !== -1) {
+    if (node.nodeType === 3 && node.nodeValue 
+        && (node.nodeValue.indexOf('{{') !== -1 || node.nodeValue.indexOf('${') !== -1)) {
         var nodes = [];
         function addTextNode(text) {
             if (text)
@@ -105,7 +112,8 @@ function attributeInterpolationMarkerPreprocessor(node) {
         var dataBindAttribute = node.getAttribute(dataBind);
         for (var attrs = node.attributes, i = attrs.length-1; i >= 0; --i) {
             var attr = attrs[i];
-            if (attr.specified && attr.name != dataBind && attr.value.indexOf('{{') !== -1) {
+            if (attr.specified && attr.name != dataBind 
+                && (attr.value.indexOf('{{') !== -1 || attr.value.indexOf('${') !== -1)) {
                 var parts = [], attrValue = '';
                 function addText(text) {
                     if (text)

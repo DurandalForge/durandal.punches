@@ -27,6 +27,10 @@ durandalSyntax.attributeBinding = function(name, value, node, bindAtt) {
       ngRepeatAs = matches[2];
       value = matches[1];
     }
+    else if(matches = value.match(/(.+?)\s+?of\s+?(.+)/)){
+      ngRepeatAs = matches[1];
+      value = matches[2];
+    }
     var ownerDocument = node ? node.ownerDocument : document,
     closeComment = ownerDocument.createComment("/ko"),
     openComment = ownerDocument.createComment(
@@ -121,13 +125,25 @@ durandalSyntax.attributePreprocessor = function(node) {
         continue;
       }
 
-      var eventCb = attr.name.match(/^on-(.+)/);
-      var bindAtt = attr.name.match(/^bind-(.+)/);
+      var eventCb = attr.name.match(/^(.+)\.delegate$/);
+      var bindAtt = attr.name.match(/^(.+)\.bind$/);
+      if(!bindAtt){
+        bindAtt = attr.name.match(/^bind-(.+)/);
+      }
       if(!bindAtt){
         bindAtt = attr.name.match(/^\[(.+?)\]$/);
       }
       if(!eventCb){
+        eventCb = attr.name.match(/^(.+)\.trigger$/);
+      }
+      if(!eventCb){
+        eventCb = attr.name.match(/^on-(.+)/);
+      }
+      if(!eventCb){
         eventCb = attr.name.match(/^\((.+?)\)$/);
+      }
+      if(attr.name == 'repeat.for'){
+        bindAtt = ['repeat.for', 'repeat'];
       }
       if(attr.name == 'if' || attr.name == 'repeat' || attr.name == 'active'){
         node.removeAttributeNode(attr);
@@ -179,25 +195,27 @@ durandalSyntax.interpolationPreprocessor = function(node){
       widgetName = localName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
     }
     if(widgetName && ko.getBindingHandler(widgetName)){
-      var widgetSettings = '{', keyString;
+      var widgetSettings = [], keyString;
       var widgetAttributes = {};
       for(var i = 0; i < node.attributes.length; i++){
         var attr = node.attributes[i];
-        var bindAtt = attr.name.match(/^bind-(.+)/);
+        var bindAtt = attr.name.match(/^(.+)\.bind$/);
+        if(!bindAtt){
+          bindAtt = attr.name.match(/^bind-(.+)/);
+        }
         if(!bindAtt){
           bindAtt = attr.name.match(/^\[(.+?)\]$/);
         }
         if(bindAtt){
           keyString = bindAtt[1];
           keyString = keyString.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-          widgetSettings += (i == 0 ? '' : ',') +
-            keyString + ':' + attr.nodeValue;
+          widgetSettings.push(keyString + ':' + attr.nodeValue);
         }
         else {
           widgetAttributes[attr.name] = attr.nodeValue;
         }
       }
-      widgetSettings += '}';
+      widgetSettings = '{' + widgetSettings.join(',') + '}';
       var element = document.createElement('div');
       element.setAttribute('data-bind', widgetName + ': ' + widgetSettings);
       for(var k in widgetAttributes){

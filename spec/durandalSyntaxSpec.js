@@ -109,17 +109,17 @@ describe('Durandal Syntax', function(){
     ko.bindingHandlers.helloWorld = {};
 
     it('Should replace custom elements to ko custom bindings', function() {
-      testNode.innerHTML = '<hello-world></hello-world>';
+      testNode.innerHTML = '<hello-world class="test"></hello-world>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="helloWorld: {}"></div>';
+      var outputHtml = '<div data-bind="helloWorld: {}" class="test"></div>';
       expect(testNode.innerHTML).toEqual(outputHtml);
 //      expect(testNode).toContainHtml(outputHtml);
     });
     
     it('Should replace custom element attributes', function() {
-      testNode.innerHTML = '<hello-world bind-message="\'Hello World\'" [yell]="true"></hello-world>';
+      testNode.innerHTML = '<hello-world class="test" bind-message="\'Hello World\'" [yell]="true"></hello-world>';
       ko.applyBindings(null, testNode);
-      var outputHtml = '<div data-bind="helloWorld: {message:\'Hello World\',yell:true}"></div>';
+      var outputHtml = '<div data-bind="helloWorld: {message:\'Hello World\',yell:true}" class="test"></div>';
       expect(testNode.innerHTML).toEqual(outputHtml);
 //      expect(testNode).toContainHtml(outputHtml);
     });
@@ -250,6 +250,23 @@ describe('Durandal Syntax', function(){
         {name: 'Jane', age: 14}
       ]);
       expect(testNode.childNodes[0].textContent).toEqual("ko foreach:{data:people,as:'person'}");
+//      console.log(Object.keys(testNode.childNodes[1]));
+      expect(testNode.childNodes[1].textContent).toEqual('ko with:$parent');
+      console.log(testNode.childNodes);
+      expect(testNode.childNodes[2].outerHTML).toEqual('<div data-bind="with:$data">{{person.name}}</div>');
+    });
+
+    it('Should allow alias for repeat row', function() {
+      var model = {demo: {people: ko.observableArray()}};
+      testNode.innerHTML = '<div repeat.for="person of demo.people">{{person.name}}</div>';
+//      ko.punches.attributeInterpolationMarkup.preprocessor(testNode);
+      ko.applyBindings(model, testNode);
+      expect(testNode.innerHTML).toEqual("<!--ko foreach:{data:demo.people,as:'person'}--><!--/ko-->");
+      model.demo.people([
+        {name: 'Alex', age: 30},
+        {name: 'Jane', age: 14}
+      ]);
+      expect(testNode.childNodes[0].textContent).toEqual("ko foreach:{data:demo.people,as:'person'}");
 //      console.log(Object.keys(testNode.childNodes[1]));
       expect(testNode.childNodes[1].textContent).toEqual('ko with:$parent');
       console.log(testNode.childNodes);
