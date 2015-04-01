@@ -599,6 +599,16 @@ durandalSyntax.attributeBinding = function(name, value, node, bindAtt) {
         node.parentNode.insertBefore(ownerDocument.createComment('ko with:$parent'), node);
         node.parentNode.insertBefore(ownerDocument.createComment('/ko'), node.nextSibling); // insertAfter
     }
+    if(node.nodeName == 'TEMPLATE'){
+        openComment = ownerDocument.createComment('ko with:$data');
+        closeComment = ownerDocument.createComment('/ko');
+        node.parentNode.insertBefore(openComment, node);
+        node.parentNode.insertBefore(closeComment, node.nextSibling);
+        var childNode = node.content ? document.importNode(node.content, true) : node.children[0];
+        node.parentNode.insertBefore(childNode, closeComment);
+        node.parentNode.removeChild(node);
+        return '';
+    }
     return isNgIf ? "with:$data" : "with:$data";
   }
 //  else if(name == 'active'){
@@ -749,7 +759,7 @@ durandalSyntax.interpolationPreprocessor = function(node){
       var localName = node.localName.toLowerCase();
       widgetName = localName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
     }
-    if(widgetName && ko.getBindingHandler(widgetName)){
+    if(widgetName && widgetName != 'template' && ko.getBindingHandler(widgetName)){
       var widgetSettings = [], keyString;
       var widgetAttributes = {};
       for(var i = 0; i < node.attributes.length; i++){
